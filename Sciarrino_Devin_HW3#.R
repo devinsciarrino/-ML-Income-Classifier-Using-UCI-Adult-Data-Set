@@ -1,12 +1,24 @@
-#Homework 3
+##################################################
+# ECON 418-518 Homework 3
+# Devin Sciarrino
+# The University of Arizona
+# devinsciarrino@arizona.edu 
+# 08 December 2024
+###################################################
 
-#set seed
-set.seed(418518)
+#####################
+# Preliminaries
+#####################
+
+
 
 # Clear environment, plot pane, and console
 rm(list = ls())
 graphics.off()
 cat("\014")
+
+# Turn off scientific notation
+options(scipen = 999)
 
 # If pacman is not already installed, then install it
 if (!require(pacman)) install.packages("pacman")
@@ -14,16 +26,24 @@ if (!require(pacman)) install.packages("pacman")
 # Load packages
 pacman::p_load(ISLR2, caret, randomForest, data.table, ggplot2, glmnet)
 
+#set seed
+set.seed(418518)
+
 #setwd
 setwd("~/Downloads")
 
 #load data
 dt <- read.csv("ECON_418-518_HW3_Data.csv")
 
+#####################
+# Problem 1
+#####################
 
 #Data Cleaning
 
-#i
+#################
+# Question (i)
+#################
 dt$fnlwgt <- NULL
 dt$occupation <- NULL
 dt$relationship <- NULL
@@ -31,66 +51,102 @@ dt$capital.gain <- NULL
 dt$capital.loss <- NULL
 dt$educational.num <- NULL
 
-################################################################################
 
-#ii
-  #a
+#################
+# Question (ii)
+#################
+##############
+# Part (a)
+##############
 dt$income <- ifelse(dt$income == ">50K", 1, 0)
 
-  #b
+##############
+# Part (b)
+##############
 dt$race <- ifelse(dt$race == "White", 1, 0)
 
-  #c
+##############
+# Part (c)
+##############
 dt$gender <- ifelse(dt$gender == "Male",1, 0)
 
-  #d
+##############
+# Part (d)
+##############
 dt$workclass <- ifelse(dt$workclass == "Private", 1, 0)
 
-  #e
+##############
+# Part (e)
+##############
 dt$native.country <- ifelse(dt$native.country == "United-States", 1, 0)
 
-  #f
+##############
+# Part (f)
+##############
 dt$marital.status <- ifelse(dt$marital.status == "Married-civ-spouse", 1, 0)
 
-  #g
+##############
+# Part (g)
+##############
 dt$education <- ifelse(dt$education %in% c("Bachelors", "Masters", "Doctorate"), 1, 0)
 
-  #h
+##############
+# Part (h)
+##############
 dt$age_sq <- (dt$age)^2
 
-  #i
+##############
+# Part (i)
+##############
 dt[, c("age", "age_sq", "hours.per.week")] <- scale(dt[, c("age", "age_sq", 
                                                            "hours.per.week")])
 
-################################################################################
 
-#iii
+#################
+# Question (iii)
+#################
 
-  #a
+##############
+# Part (a)
+##############
 iii.a <- sum(dt$income)
 print(iii.a)
 
-  #b
+##############
+# Part (b)
+##############
 iii.b <- sum(dt$workclass) / 48842
 
-  #c
+##############
+# Part (c)
+##############
 iii.c <- sum(dt$marital.status) / 48842
 
-  #d
+##############
+# Part (d)
+##############
 iii.d <- (sum(dt$gender) - 1) / 48842
 
-  #e
+##############
+# Part (e)
+##############
 dt[dt == ""] <- NA
 iii.e <- sum(is.na(dt))
 
-  #d
+##############
+# Part (f)
+##############
 dt$income <- as.factor(dt$income)
 
-################################################################################
 
-#iv
 
-  #a, b, & c
+#################
+# Question (iv)
+#################
+
+##############
+# Part (a, b, & c)
+##############
 train_size <- floor(0.7 * nrow(dt)) #finding amount for each indices 
 test_size <- ceiling(0.3 * nrow(dt))
 shuffled_indices <- sample(nrow(dt)) #shuffle orignial data set
@@ -99,11 +155,15 @@ test_indices <- shuffled_indices[(train_size + 1):nrow(dt)]
 dt_train <- dt[train_indices, ] #create data sets
 dt_test <- dt[test_indices, ]
 
-################################################################################
 
-#v
 
-  #b
+#################
+# Question (v)
+#################
+
+##############
+# Part (b)
+##############
 
 # Set up the train control for cross-validation
 train_control <- trainControl(method = "cv", number = 10)  # 10-fold cross-validation
@@ -119,7 +179,9 @@ reg_lasso <- train(income ~ .,
 
 reg_lasso
 
-  #d
+##############
+# Part (d)
+##############
 
 # Extract coefficients from the trained Lasso model
 best_lambda <- reg_lasso$bestTune$lambda  # Best lambda selected by train()
@@ -127,7 +189,9 @@ lasso_coefficients <- coef(reg_lasso$finalModel, s = best_lambda)
 print(lasso_coefficients)
 
 
-  #e
+##############
+# Part (e)
+##############
 
 #lasso 2
 reg_lasso2 <- train(income ~ age + education + marital.status + race + 
@@ -203,11 +267,14 @@ confusion_matrix_ridge <- confusionMatrix(data = predictions_ridge, reference = 
 # View the confusion matrix
 print(confusion_matrix_ridge)
 
-################################################################################
 
-#vi
+#################
+# Question (vi)
+#################
 
-  #b
+##############
+# Part (b)
+##############
 
 # Define the grid of mtry values 
 mtry_grid <- expand.grid(mtry = c(2, 5, 9, ncol(dt_train) - 1))
@@ -253,9 +320,11 @@ confusion_matrix_rf300 <- confusionMatrix(predictions_rf300, dt_train$income)
 # Print the confusion matrix and other performance metrics
 print(confusion_matrix_rf300)
 
-################################################################################
 
-#VII
+
+#################
+# Question (vii)
+#################
 
 # Make predictions on the testing data
 predictions_rf_test <- predict(model_rf, newdata = dt_test)
